@@ -63,7 +63,7 @@ class Graph:
 				cls.muchiiSalt.append((i, i+5, i+10))
 				cls.muchiiSalt.append((i+10, i+5, i))
 				if i % 2 == 0:
-					if (i + 1) % 5 != 1 :
+					if (i + 1) % 5 != 1 and (i + 1) % 5 != 2:
 						cls.muchiiSalt.append((i, i+4, i+8))
 						cls.muchiiSalt.append((i+8, i+4, i))
 					if (i+1) % 5 != 0 and (i+1) % 5 != 4 and i < 13:
@@ -163,8 +163,10 @@ class Graph:
 			return (99999 + adancime)
 		elif t_final == self.__class__.JMIN:
 			return (-99999 - adancime)
-		else:
+		elif Graph.JMAX == "tigri":
 			return 30 * self.tigrii_liberi(j_curent) + 70 * self.capreMancate - 70 * self.spatii_ocupate()
+		else:
+			return 30 * self.spatii_ocupate() - 30 * self.tigrii_liberi(j_curent) - 120 * self.capreMancate
 
 
 
@@ -367,6 +369,7 @@ def main():
 									if Graph.JMIN == "capre": # daca jucatorul este capra si inca nu a pus toate 20 caprele pe tabla, atunci pune o capra pe nodul selectat
 										if stare_curenta.tabla_joc.caprePuse < 20:
 											stare_curenta.tabla_joc.matr[idx] = 'C'
+											stare_curenta.tabla_joc.capre.append(idx)
 											stare_curenta.tabla_joc.caprePuse += 1
 											stare_curenta.tabla_joc.deseneazaEcranJoc(ecran)
 											stare_curenta.j_curent = Graph.jucator_opus(stare_curenta.j_curent)
