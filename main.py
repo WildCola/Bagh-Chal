@@ -9,6 +9,7 @@ culoareEcran = (250,210,117)
 culoareLinii = (0,0,0)
 culoareTigrii = (255, 100, 0)
 culoareCapre = (200, 200, 200)
+l_stari = []
 
 def distEuclid(p0,p1):
 	(x0,y0) = p0
@@ -108,21 +109,24 @@ class Graph:
 						copie_matr = deepcopy(self.matr)
 						copie_matr[mutare[1]] = 'T'
 						copie_matr[mutare[0]] = self.GOL
-						l_mutari.append(Graph(copie_matr, self.capreMancate, self.caprePuse))
+						if copie_matr not in l_stari:
+							l_mutari.append(Graph(copie_matr, self.capreMancate, self.caprePuse))
 				for mutare in Graph.muchiiSalt:
 					if mutare[0] == tigru and self.matr[mutare[1]] == 'C' and self.matr[mutare[2]] == self.GOL:
 						copie_matr = deepcopy(self.matr)
 						copie_matr[mutare[2]] = 'T'
 						copie_matr[mutare[1]] = self.GOL
 						copie_matr[mutare[0]] = self.GOL
-						l_mutari.append(Graph(copie_matr, self.capreMancate+1, self.caprePuse))
+						if copie_matr not in l_stari:
+							l_mutari.append(Graph(copie_matr, self.capreMancate+1, self.caprePuse))
 		else:
 			if self.caprePuse < 20:
 				for i in range(25):
 					if self.matr[i] == self.GOL:
 						copie_matr = deepcopy(self.matr)
 						copie_matr[i] = 'C'
-						l_mutari.append(Graph(copie_matr, self.capreMancate, self.caprePuse+1))
+						if copie_matr not in l_stari:
+							l_mutari.append(Graph(copie_matr, self.capreMancate, self.caprePuse+1))
 			else:
 				for capra in self.capre:
 					for mutare in self.muchii:
@@ -130,13 +134,14 @@ class Graph:
 							copie_matr = deepcopy(self.matr)
 							copie_matr[mutare[1]] = 'C'
 							copie_matr[mutare[0]] = self.GOL
-							l_mutari.append(Graph(copie_matr, self.capreMancate, self.caprePuse))
+							if copie_matr not in l_stari:
+								l_mutari.append(Graph(copie_matr, self.capreMancate, self.caprePuse))
 		return l_mutari
 
-	def final(self):
+	def final(self, j_curent):
 		if self.capreMancate >= 5:
 			return "tigri"
-		if self.mutari == []:
+		if self.mutari(j_curent) == []:
 			return "capre"
 		return False
 
@@ -158,7 +163,7 @@ class Graph:
 		return nr
 
 	def estimeaza_scor(self, adancime, j_curent):
-		t_final = self.final()
+		t_final = self.final(j_curent)
 		if t_final == self.__class__.JMAX:
 			return (99999 + adancime)
 		elif t_final == self.__class__.JMIN:
@@ -223,7 +228,7 @@ class Stare:
 
 
 def min_max(stare):
-	if stare.adancime == 0 or stare.tabla_joc.final():
+	if stare.adancime == 0 or stare.tabla_joc.final(stare.j_curent):
 		stare.estimare = stare.tabla_joc.estimeaza_scor(stare.adancime, stare.j_curent)
 		return stare
 	stare.mutari_posibile = stare.mutari()
@@ -240,7 +245,7 @@ def min_max(stare):
 
 
 def alpha_beta(alpha, beta, stare):
-	if stare.adancime == 0 or stare.tabla_joc.final():
+	if stare.adancime == 0 or stare.tabla_joc.final(stare.j_curent):
 		stare.estimare = stare.tabla_joc.estimeaza_scor(stare.adancime, stare.j_curent)
 		return stare
 
@@ -279,7 +284,10 @@ def alpha_beta(alpha, beta, stare):
 				beta = stare_noua.estimare
 				if alpha >= beta:
 					break
-	stare.estimare = stare.stare_aleasa.estimare
+	try:
+		stare.estimare = stare.stare_aleasa.estimare
+	except:
+		print("Castigator: capre")
 
 	return stare
 
@@ -312,11 +320,10 @@ def main():
 	ecran = pygame.display.set_mode(size=(440, 440))
 	tabla_curenta.deseneazaEcranJoc(ecran)
 	de_mutat = -1
-	l_stari = []
 	while True:
-		if stare_curenta.tabla_joc.final():
-			print("Castigator: " + stare_curenta.tabla_joc.final())
-			break
+		if stare_curenta.tabla_joc.final(stare_curenta.j_curent):
+			print("Castigator: " + stare_curenta.tabla_joc.final(stare_curenta.j_curent))
+			return
 		if stare_curenta.j_curent == Graph.JMIN: # mutarea jucatorului
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -356,12 +363,13 @@ def main():
 												de_mutat = -1
 												stare_curenta.j_curent = Graph.jucator_opus(stare_curenta.j_curent)
 											elif stare_curenta.tabla_joc not in l_stari:
-												stare_curenta.tabla_joc = aux
-												l_stari.append(stare_curenta.tabla_joc)
-												stare_curenta.tabla_joc = mut
+												l_stari.append(stare_curenta.tabla_joc.matr)
 												stare_curenta.tabla_joc.deseneazaEcranJoc(ecran)
 												de_mutat = -1
 												stare_curenta.j_curent = Graph.jucator_opus(stare_curenta.j_curent)
+												if stare_curenta.tabla_joc.final(stare_curenta.j_curent):
+													print("Castigator: " + stare_curenta.tabla_joc.final(stare_curenta.j_curent))
+													return
 
 											else:
 												stare_curenta.tabla_joc = aux
