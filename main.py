@@ -66,7 +66,7 @@ class Graph:
 					if (i + 1) % 5 != 1 :
 						cls.muchiiSalt.append((i, i+4, i+8))
 						cls.muchiiSalt.append((i+8, i+4, i))
-					if (i+1) % 5 < 4 and i < 13:
+					if (i+1) % 5 != 0 and (i+1) % 5 != 4 and i < 13:
 						cls.muchiiSalt.append((i, i+6, i+12))
 						cls.muchiiSalt.append((i+12, i+6, i))
 		#print(cls.muchiiSalt)
@@ -196,7 +196,7 @@ class Graph:
 		pygame.display.update()
 
 class Stare:
-	def __init__(self, tabla_joc, j_curent, adancime, parinte=None, estimare=None):
+	def __init__(self, tabla_joc, j_curent, adancime, parinte=None, estimare=0):
 		self.tabla_joc = tabla_joc
 		self.j_curent = j_curent
 
@@ -360,6 +360,7 @@ def main():
 												stare_curenta.tabla_joc.deseneazaEcranJoc(ecran)
 												de_mutat = -1
 												stare_curenta.j_curent = Graph.jucator_opus(stare_curenta.j_curent)
+
 											else:
 												stare_curenta.tabla_joc = aux
 								else:
@@ -378,7 +379,7 @@ def main():
 				stare_actualizata = alpha_beta(-500, 500, stare_curenta)
 			stare_curenta.tabla_joc = stare_actualizata.stare_aleasa.tabla_joc
 			print("Tabla dupa mutarea calculatorului")
-			print(str(stare_curenta))
+			print(str(stare_curenta.tabla_joc.matr))
 
 			stare_curenta.tabla_joc.deseneazaEcranJoc(ecran)
 			# preiau timpul in milisecunde de dupa mutare
