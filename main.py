@@ -342,7 +342,10 @@ def main():
 	ecran = pygame.display.set_mode(size=(440, 440))
 	tabla_curenta.deseneazaEcranJoc(ecran)
 	de_mutat = -1
+
 	t_inainte = int(round(time.time() * 1000))
+	mut_j = 0
+	mut_c = 0
 	while True:
 		if stare_curenta.tabla_joc.final(stare_curenta.j_curent):
 			t_final = int(round(time.time() * 1000))
@@ -356,6 +359,8 @@ def main():
 			print("Media nodurilor : " + str(statistics.fmean(l_noduri)))
 			print("Mediana nodurilor : " + str(statistics.median(l_noduri)))
 			print("Timp total de joc: " + str(t_final - t_joc) + " milisecunde")
+			print("Numarul de mutari al jucatorului: " + str(mut_j))
+			print("Numarul de mutari al calculatorului: " + str(mut_c))
 			while True:
 				for event in pygame.event.get():
 					if event.type == pygame.QUIT:
@@ -376,6 +381,8 @@ def main():
 					print("Media nodurilor : " + str(statistics.fmean(l_noduri)))
 					print("Mediana nodurilor : " + str(statistics.median(l_noduri)))
 					print("Timp total de joc: " + str(t_final - t_joc) + " milisecunde")
+					print("Numarul de mutari al jucatorului: " + str(mut_j))
+					print("Numarul de mutari al calculatorului: " + str(mut_c))
 					pygame.quit()  # inchide fereastra
 					sys.exit()
 				elif event.type == pygame.MOUSEBUTTONDOWN:  # click
@@ -411,6 +418,7 @@ def main():
 												stare_curenta.tabla_joc.deseneazaEcranJoc(ecran)
 												de_mutat = -1
 												t_dupa = int(round(time.time() * 1000))
+												mut_j += 1
 												print("Jucatorul a \"gandit\" timp de " + str(t_dupa - t_inainte) + " milisecunde.")
 												stare_curenta.j_curent = Graph.jucator_opus(stare_curenta.j_curent)
 											elif stare_curenta.tabla_joc not in l_stari:
@@ -418,6 +426,7 @@ def main():
 												stare_curenta.tabla_joc.deseneazaEcranJoc(ecran)
 												de_mutat = -1
 												t_dupa = int(round(time.time() * 1000))
+												mut_j += 1
 												print("Jucatorul a \"gandit\" timp de " + str(t_dupa - t_inainte) + " milisecunde.")
 												stare_curenta.j_curent = Graph.jucator_opus(stare_curenta.j_curent)
 												# if stare_curenta.tabla_joc.final(stare_curenta.j_curent):
@@ -434,10 +443,12 @@ def main():
 											stare_curenta.tabla_joc.caprePuse += 1
 											stare_curenta.tabla_joc.deseneazaEcranJoc(ecran)
 											t_dupa = int(round(time.time() * 1000))
+											mut_j += 1
 											print("Jucatorul a \"gandit\" timp de " + str(t_dupa - t_inainte) + " milisecunde.")
 											stare_curenta.j_curent = Graph.jucator_opus(stare_curenta.j_curent)
 
 		else: # mutarea calculatorului
+			mut_c += 1
 			global nrnod
 			nrnod = 0
 			t_inainte = int(round(time.time() * 1000))
