@@ -3,6 +3,7 @@ import sys
 import math
 from copy import *
 import time
+import statistics
 
 ADANCIME_MAX = 3
 culoareEcran = (250,210,117)
@@ -10,6 +11,9 @@ culoareLinii = (0,0,0)
 culoareTigrii = (255, 100, 0)
 culoareCapre = (200, 200, 200)
 l_stari = []
+l_timpi = []
+l_noduri = []
+global nrnod
 
 def distEuclid(p0,p1):
 	(x0,y0) = p0
@@ -139,9 +143,12 @@ class Graph:
 		return l_mutari
 
 	def final(self, j_curent):
-		if self.capreMancate >= 5:
+		mut = self.mutari(j_curent)
+		if mut == [] and self.mutari(self.jucator_opus(j_curent)) == []:
+			return "remiza"
+		elif self.capreMancate >= 5:
 			return "tigri"
-		if self.mutari(j_curent) == []:
+		elif mut == []:
 			return "capre"
 		return False
 
@@ -171,7 +178,7 @@ class Graph:
 		elif Graph.JMAX == "tigri":
 			return 30 * self.tigrii_liberi(j_curent) + 70 * self.capreMancate - 70 * self.spatii_ocupate()
 		else:
-			return 30 * self.spatii_ocupate() - 30 * self.tigrii_liberi(j_curent) - 120 * self.capreMancate
+			return 30 * self.spatii_ocupate() - 30 * self.tigrii_liberi(j_curent) - 70 * self.capreMancate
 
 
 
@@ -228,6 +235,8 @@ class Stare:
 
 
 def min_max(stare):
+	global nrnod
+	nrnod += 1
 	if stare.adancime == 0 or stare.tabla_joc.final(stare.j_curent):
 		stare.estimare = stare.tabla_joc.estimeaza_scor(stare.adancime, stare.j_curent)
 		return stare
@@ -245,6 +254,8 @@ def min_max(stare):
 
 
 def alpha_beta(alpha, beta, stare):
+	global nrnod
+	nrnod += 1
 	if stare.adancime == 0 or stare.tabla_joc.final(stare.j_curent):
 		stare.estimare = stare.tabla_joc.estimeaza_scor(stare.adancime, stare.j_curent)
 		return stare
@@ -292,13 +303,22 @@ def alpha_beta(alpha, beta, stare):
 	return stare
 
 def main():
+	t_joc = int(round(time.time() * 1000))
 	#initializare algoritm
 	Graph.initializeaza()
 	raspuns_valid=False
 	while not raspuns_valid:
-		tip_algoritm=input("Algorimul folosit? (raspundeti cu 1 sau 2)\n 1.Minimax\n 2.Alpha-beta\n ")
+		tip_algoritm=input("Algoritmul folosit? (raspundeti cu 1 sau 2)\n 1.Min-max\n 2.Alpha-beta\n ")
 		if tip_algoritm in ['1','2']:
 			raspuns_valid=True
+		else:
+			print("Nu ati ales o varianta corecta.")
+	raspuns_valid=False
+	while not raspuns_valid:
+		ADANCIME_MAX=input("Dificultate: (raspundeti cu 1, 2 sau 3)\n 1.Usor\n 2.Mediu\n 3.Greu\n")
+		if ADANCIME_MAX in ['1','2','3']:
+			raspuns_valid=True
+			ADANCIME_MAX = int(ADANCIME_MAX)
 		else:
 			print("Nu ati ales o varianta corecta.")
 	#initializare jucatori
@@ -313,20 +333,49 @@ def main():
 
 	tabla_curenta = Graph()
 	print("Tabla initiala:")
-	print(str(tabla_curenta.matr))
+	for i in range(5):
+		print(list(tabla_curenta.matr[i * 5 + j] for j in range(5)))
 
 	stare_curenta = Stare(tabla_curenta, 'capre', ADANCIME_MAX)
 	pygame.init()
+	pygame.display.set_caption("Placintescu Stefan - BaghChal")
 	ecran = pygame.display.set_mode(size=(440, 440))
 	tabla_curenta.deseneazaEcranJoc(ecran)
 	de_mutat = -1
+	t_inainte = int(round(time.time() * 1000))
 	while True:
 		if stare_curenta.tabla_joc.final(stare_curenta.j_curent):
-			print("Castigator: " + stare_curenta.tabla_joc.final(stare_curenta.j_curent))
-			return
+			t_final = int(round(time.time() * 1000))
+			print("\nCastigator: " + stare_curenta.tabla_joc.final(stare_curenta.j_curent))
+			print("Timp minim de gandire: " + str(min(l_timpi)) + " milisecunde")
+			print("Timp maxim de gandire: " + str(max(l_timpi)) + " milisecunde")
+			print("Timp mediu de gandire: " + str(statistics.fmean(l_timpi)) + " milisecunde")
+			print("Mediana timpilor de gandire: " + str(statistics.median(l_timpi)) + " milisecunde")
+			print("Noduri minime: " + str(min(l_noduri)))
+			print("Noduri maxime: " + str(max(l_noduri)))
+			print("Media nodurilor : " + str(statistics.fmean(l_noduri)))
+			print("Mediana nodurilor : " + str(statistics.median(l_noduri)))
+			print("Timp total de joc: " + str(t_final - t_joc) + " milisecunde")
+			while True:
+				for event in pygame.event.get():
+					if event.type == pygame.QUIT:
+						pygame.quit()  # inchide fereastra
+						sys.exit()
+						return
 		if stare_curenta.j_curent == Graph.JMIN: # mutarea jucatorului
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
+					t_final = int(round(time.time() * 1000))
+					print("\nJocul a fost oprit!")
+					print("Timp minim de gandire: " + str(min(l_timpi)) + " milisecunde")
+					print("Timp maxim de gandire: " + str(max(l_timpi)) + " milisecunde")
+					print("Timp mediu de gandire: " + str(statistics.fmean(l_timpi)) + " milisecunde")
+					print("Mediana timpilor de gandire: " + str(statistics.median(l_timpi)) + " milisecunde")
+					print("Noduri minime: " + str(min(l_noduri)))
+					print("Noduri maxime: " + str(max(l_noduri)))
+					print("Media nodurilor : " + str(statistics.fmean(l_noduri)))
+					print("Mediana nodurilor : " + str(statistics.median(l_noduri)))
+					print("Timp total de joc: " + str(t_final - t_joc) + " milisecunde")
 					pygame.quit()  # inchide fereastra
 					sys.exit()
 				elif event.type == pygame.MOUSEBUTTONDOWN:  # click
@@ -361,15 +410,19 @@ def main():
 											if stare_curenta.tabla_joc.caprePuse < 20:
 												stare_curenta.tabla_joc.deseneazaEcranJoc(ecran)
 												de_mutat = -1
+												t_dupa = int(round(time.time() * 1000))
+												print("Jucatorul a \"gandit\" timp de " + str(t_dupa - t_inainte) + " milisecunde.")
 												stare_curenta.j_curent = Graph.jucator_opus(stare_curenta.j_curent)
 											elif stare_curenta.tabla_joc not in l_stari:
 												l_stari.append(stare_curenta.tabla_joc.matr)
 												stare_curenta.tabla_joc.deseneazaEcranJoc(ecran)
 												de_mutat = -1
+												t_dupa = int(round(time.time() * 1000))
+												print("Jucatorul a \"gandit\" timp de " + str(t_dupa - t_inainte) + " milisecunde.")
 												stare_curenta.j_curent = Graph.jucator_opus(stare_curenta.j_curent)
-												if stare_curenta.tabla_joc.final(stare_curenta.j_curent):
-													print("Castigator: " + stare_curenta.tabla_joc.final(stare_curenta.j_curent))
-													return
+												# if stare_curenta.tabla_joc.final(stare_curenta.j_curent):
+												# 	print("Castigator: " + stare_curenta.tabla_joc.final(stare_curenta.j_curent))
+												# 	return
 
 											else:
 												stare_curenta.tabla_joc = aux
@@ -380,9 +433,13 @@ def main():
 											stare_curenta.tabla_joc.capre.append(idx)
 											stare_curenta.tabla_joc.caprePuse += 1
 											stare_curenta.tabla_joc.deseneazaEcranJoc(ecran)
+											t_dupa = int(round(time.time() * 1000))
+											print("Jucatorul a \"gandit\" timp de " + str(t_dupa - t_inainte) + " milisecunde.")
 											stare_curenta.j_curent = Graph.jucator_opus(stare_curenta.j_curent)
 
 		else: # mutarea calculatorului
+			global nrnod
+			nrnod = 0
 			t_inainte = int(round(time.time() * 1000))
 			if tip_algoritm == '1':
 				stare_actualizata = min_max(stare_curenta)
@@ -390,14 +447,20 @@ def main():
 				stare_actualizata = alpha_beta(-500, 500, stare_curenta)
 			stare_curenta.tabla_joc = stare_actualizata.stare_aleasa.tabla_joc
 			print("Tabla dupa mutarea calculatorului")
-			print(str(stare_curenta.tabla_joc.matr))
+			for i in range(5):
+				print(list(stare_curenta.tabla_joc.matr[i*5 + j] for j in range(5)))
 
 			stare_curenta.tabla_joc.deseneazaEcranJoc(ecran)
 			# preiau timpul in milisecunde de dupa mutare
 			t_dupa = int(round(time.time() * 1000))
+			l_timpi.append(t_dupa - t_inainte)
+			l_noduri.append(nrnod)
+			print("Noduri generate: " + str(nrnod))
+			print("Scor estimat: " + str(stare_curenta.estimare))
 			print("Calculatorul a \"gandit\" timp de " + str(t_dupa - t_inainte) + " milisecunde.")
 
 			stare_curenta.j_curent = Graph.jucator_opus(stare_curenta.j_curent)
+			t_inainte = int(round(time.time() * 1000))
 
 if __name__ == "__main__" :
 	main()
